@@ -77,6 +77,7 @@ func enableCORS(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Vary", "Origin")
 
 		if r.Method == "OPTIONS" {
@@ -143,7 +144,7 @@ func handleCompress(w http.ResponseWriter, r *http.Request) {
 		OriginalSize:   header.Size,
 		CompressedSize: compressedSize,
 		Savings:        savings,
-		DownloadURL:    fmt.Sprintf("http://localhost:8080/download/%s", outFilename),
+		DownloadURL:    fmt.Sprintf("http://%s/download/%s", os.Getenv("ALLOWED_ORIGIN"), outFilename),
 		Format:         format,
 	}, http.StatusOK)
 }
