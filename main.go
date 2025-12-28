@@ -144,7 +144,7 @@ func handleCompress(w http.ResponseWriter, r *http.Request) {
 		OriginalSize:   header.Size,
 		CompressedSize: compressedSize,
 		Savings:        savings,
-		DownloadURL:    fmt.Sprintf("%s/download/%s", os.Getenv("ALLOWED_ORIGIN"), outFilename),
+		DownloadURL:    fmt.Sprintf("%s/download/%s", getBackendURL(), outFilename),
 		Format:         format,
 	}, http.StatusOK)
 }
@@ -167,4 +167,11 @@ func loadenv() error {
 
 func isProduction() bool {
 	return os.Getenv("NODE_ENV") == "production"
+}
+
+func getBackendURL() string {
+	if url := os.Getenv("BACKEND_URL"); url != "" {
+		return url
+	}
+	return "http://localhost:8080"
 }
