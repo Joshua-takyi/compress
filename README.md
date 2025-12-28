@@ -65,5 +65,3 @@ graph LR
     C -- jpeg.Encode(quality) --> D[Compressed .jpg]
     D -- JSON Stats --> A
 ```
-
-Built for engineers who love clean code.
