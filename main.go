@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -58,14 +59,17 @@ func main() {
 
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		allowedOrigin := "http://localhost:4321"
-		if isProduction() {
-			if envOrigin := os.Getenv("FRONTEND_URL"); envOrigin != "" {
-				allowedOrigin = envOrigin
+
+		allowedOrigin := []string{}
+		for _, origin := range strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",") {
+			if r.Header.Get("Origin") == origin {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				break
 			}
+			allowedOrigin = append(allowedOrigin, origin)
 		}
 
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		w.Header().Set("Access-Control-Allow-Origin", strings.Join(allowedOrigin, ","))
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Vary", "Origin")
