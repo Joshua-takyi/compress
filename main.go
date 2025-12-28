@@ -43,6 +43,14 @@ func main() {
 	// API endpoint with CORS
 	mux.Handle("/api/compress", enableCORS(http.HandlerFunc(handleCompress)))
 
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(CompressResponse{
+			Success: true,
+			Message: "Welcome to Squeeze API",
+		})
+	})
+
 	// File server for downloads with CORS
 	mux.Handle("/download/", enableCORS(http.StripPrefix("/download/", http.FileServer(http.Dir("compressed")))))
 
