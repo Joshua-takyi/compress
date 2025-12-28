@@ -144,7 +144,7 @@ func handleCompress(w http.ResponseWriter, r *http.Request) {
 		OriginalSize:   header.Size,
 		CompressedSize: compressedSize,
 		Savings:        savings,
-		DownloadURL:    fmt.Sprintf("http://%s/download/%s", os.Getenv("ALLOWED_ORIGIN"), outFilename),
+		DownloadURL:    fmt.Sprintf("%s/download/%s", os.Getenv("ALLOWED_ORIGIN"), outFilename),
 		Format:         format,
 	}, http.StatusOK)
 }
