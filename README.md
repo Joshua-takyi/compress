@@ -6,29 +6,6 @@ Squeeze is a minimalist, industrial-grade image optimization tool. It takes your
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Fire up the Backend (Go)
-
-```bash
-cd backend
-go run main.go
-```
-
-_Running on `http://localhost:8080`_
-
-### 2. Launch the Frontend (Astro + React)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-_Active at `http://localhost:4321`_
-
----
-
 ## 🛠️ The Stack
 
 | Layer            | Technology           | Role                                        |
