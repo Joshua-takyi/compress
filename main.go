@@ -44,9 +44,8 @@ func main() {
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(CompressResponse{
-			Success: true,
-			Message: "Welcome to Squeeze API",
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"message": "Welcome to Squeeze API",
 		})
 	})
 
@@ -60,8 +59,43 @@ func main() {
 		WriteTimeout: 20 * time.Second,
 	}
 
+	go startCleanupService()
+
 	log.Println("Squeeze API starting on :8080...")
 	log.Fatal(server.ListenAndServe())
+}
+
+// Semaphore to limit concurrent compression tasks to prevent CPU thrashing in production
+var compressionSemaphore = make(chan struct{}, 4)
+
+func startCleanupService() {
+	ticker := time.NewTicker(30 * time.Minute)
+	log.Println("Background cleanup service started")
+	for range ticker.C {
+		log.Println("Running periodic cleanup of 'compressed' directory...")
+		files, err := os.ReadDir("compressed")
+		if err != nil {
+			log.Printf("Cleanup error: %v", err)
+			continue
+		}
+
+		now := time.Now()
+		count := 0
+		for _, f := range files {
+			info, err := f.Info()
+			if err != nil {
+				continue
+			}
+			// Delete files older than 1 hour
+			if now.Sub(info.ModTime()) > 1*time.Hour {
+				os.Remove(filepath.Join("compressed", f.Name()))
+				count++
+			}
+		}
+		if count > 0 {
+			log.Printf("Cleaned up %d old files", count)
+		}
+	}
 }
 
 func enableCORS(next http.Handler) http.Handler {
@@ -109,7 +143,10 @@ func handleCompress(w http.ResponseWriter, r *http.Request) {
 		quality = 75
 	}
 
-	// 2. Decode Image
+	compressionSemaphore <- struct{}{}
+	defer func() { <-compressionSemaphore }()
+
+	// 3. Decode Image
 	img, format, err := image.Decode(file)
 	if err != nil {
 		jsonResponse(w, CompressResponse{Success: false, Message: fmt.Sprintf("Unsupported image format: %v", err)}, http.StatusBadRequest)
